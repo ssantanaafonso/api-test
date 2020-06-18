@@ -5,6 +5,9 @@
       "mongoose": "~5.9.18",
       "body-parser": "^1.5.1",
       "express": "^4.7.1",
-      "method-override": "^2.1.2"
+      "method-override": "^2.1.2",
+      "bcrypt": "^5.0.0",
+      "passport": "0.4.1",
+      "passport-http": "0.3.0"
    }
 }

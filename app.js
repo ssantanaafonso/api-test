@@ -4,26 +4,38 @@ var express = require("express"),
     bodyParser  = require("body-parser"),
     methodOverride = require("method-override");
     mongoose = require('mongoose');
-    require('./models/customers')
-
-    CustomerCtrl = require('./controllers/customers')
+    require('./models/customers');
+    require('./models/users');
+    CustomerCtrl = require('./controllers/customers');
+    UserCtrl = require('./controllers/users');
+    passport = require('passport');
+    require('./config/passport');
 
 //MIDLEWARE
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(bodyParser.json());
   app.use(methodOverride());
-
+  app.use(passport.initialize());
 //ROUTES
 var router = express.Router();
 
-router.route('/customers')
-  .get(CustomerCtrl.findAllCustomers)
-  .post(CustomerCtrl.addCustomer);
+  //customers
 
-router.route('/customers/:id')
-  .get(CustomerCtrl.findCustomerById)
-  .put(CustomerCtrl.updateCustomer)
-  .delete(CustomerCtrl.deleteCustomer);
+  router.route('/customers')
+    .get(passport.authenticate('basic', { session: false }), CustomerCtrl.findAllCustomers)
+    .post(CustomerCtrl.addCustomer);
+
+  router.route('/customers/:id')
+    .get(CustomerCtrl.findCustomerById)
+    .put(CustomerCtrl.updateCustomer)
+    .delete(CustomerCtrl.deleteCustomer);
+
+  //users
+  router.route('/users')
+    .get(passport.authenticate('basic', { session: false }), UserCtrl.findAllUsers)
+    .post(UserCtrl.addUser);
+
+
 
 app.use(router);
 
