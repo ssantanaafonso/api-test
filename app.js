@@ -1,3 +1,5 @@
+
+
 //INITIALIZATION
 var express = require("express"),
     app = express(),
@@ -23,18 +25,21 @@ var router = express.Router();
 
   router.route('/customers')
     .get(passport.authenticate('basic', { session: false }), CustomerCtrl.findAllCustomers)
-    .post(CustomerCtrl.addCustomer);
+    .post(passport.authenticate('basic', { session: false }), CustomerCtrl.addCustomer);
 
-  router.route('/customers/:id')
-    .get(CustomerCtrl.findCustomerById)
-    .put(CustomerCtrl.updateCustomer)
-    .delete(CustomerCtrl.deleteCustomer);
+  router.route('/customer/:id')
+    .get(passport.authenticate('basic', { session: false }), CustomerCtrl.findCustomerById)
+    .put(passport.authenticate('basic', { session: false }), CustomerCtrl.updateCustomer)
+    .delete(passport.authenticate('basic', { session: false }), CustomerCtrl.deleteCustomer);
 
   //users
   router.route('/users')
     .get(passport.authenticate('basic', { session: false }), UserCtrl.findAllUsers)
-    .post(UserCtrl.addUser);
-
+    .post(passport.authenticate('basic', { session: false }), UserCtrl.addUser);
+  router.route('/user/:id')
+    .get(passport.authenticate('basic', { session: false }), UserCtrl.findUserById)
+    .put(passport.authenticate('basic', { session: false }), UserCtrl.updateUser)
+    .delete(passport.authenticate('basic', { session: false }), UserCtrl.deleteUser);
 
 
 app.use(router);

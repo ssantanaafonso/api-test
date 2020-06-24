@@ -12,7 +12,7 @@ exports.findAllCustomers = function(req, res) {
 };
 //GET - Return a certain customers in the DB by Id
 exports.findCustomerById = function(req, res) {
-    Customer.findCustomerById(req.params.id, function(err, customer) {
+    Customer.findById(req.params.id, function(err, customer) {
     if(err) return res.send(500, err.message);
     console.log('GET /customer/' + req.params.id);
         res.status(200).jsonp(customer);
@@ -39,7 +39,7 @@ exports.addCustomer = function(req, res) {
 
 //PUT - Update a register already exists
 exports.updateCustomer = function(req, res) {
-    Customer.findCustomerById(req.params.id, function(err, customer) {
+    Customer.findById(req.params.id, function(err, customer) {
         customer.name = req.body.name,
         customer.surname = req.body.surname,
         customer.photo = req.body.photo,
