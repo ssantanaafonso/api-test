@@ -29,7 +29,7 @@ var express = require("express"),
       if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'){
         cb(null, true);
       }else{
-        cb(new Error('Wrong mimetype, only jpeg or png files accepted'), false);
+        cb('Wrong mimetype, only jpeg or png files accepted', false);
       }
     }
 
