@@ -13,13 +13,3 @@ passport.use(new BasicStrategy(
       });
     }
 ));
-
-// passport.serializeUser((user, done) => {
-//   done(null,user.id);
-// });
-
-// passport.deserializeUser((user, done) => {
-//   User.findById(id, (err, user) => {
-//     done(err, user);
-//   });
-// });

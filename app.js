@@ -12,12 +12,40 @@ var express = require("express"),
     UserCtrl = require('./controllers/users');
     passport = require('passport');
     require('./config/passport');
+    multer = require('multer');
+    
+
+    storage = multer.diskStorage({
+      destination: function(req, file, cb) {
+        cb(null, './uploads/');
+      },
+      filename: function(req, file, cb){
+        var extension = file.mimetype.split('/')
+        cb(null, Date.now()+'.'+extension[1]);
+      }
+    });
+
+    fileFilter = (req, file, cb) => {
+      if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'){
+        cb(null, true);
+      }else{
+        cb(new Error('Wrong mimetype, only jpeg or png files accepted'), false);
+      }
+    }
+
+    upload = multer({storage: storage, 
+      limits: {
+        fileSize: 1024*1024*10
+      },
+      fileFilter: fileFilter
+    });
 
 //MIDLEWARE
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(bodyParser.json());
   app.use(methodOverride());
   app.use(passport.initialize());
+  app.use('/uploads', express.static('uploads'));
 //ROUTES
 var router = express.Router();
 
@@ -32,6 +60,9 @@ var router = express.Router();
     .put(passport.authenticate('basic', { session: false }), CustomerCtrl.updateCustomer)
     .delete(passport.authenticate('basic', { session: false }), CustomerCtrl.deleteCustomer);
 
+  router.route('/customer/:id/profilePic')
+    .put(passport.authenticate('basic', { session: false }), upload.single('customerImage'), CustomerCtrl.updateCustomerImage);
+
   //users
   router.route('/users')
     .get(passport.authenticate('basic', { session: false }), UserCtrl.findAllUsers)
@@ -40,20 +71,8 @@ var router = express.Router();
     .get(passport.authenticate('basic', { session: false }), UserCtrl.findUserById)
     .put(passport.authenticate('basic', { session: false }), UserCtrl.updateUser)
     .delete(passport.authenticate('basic', { session: false }), UserCtrl.deleteUser);
-
-
+  
 app.use(router);
-
-//mongoose
-/* mongoose.connect('mongodb://127.0.0.1:27017/users')
-var db = mongoose.connection
-db.on('error', function(err){
-  console.log('connection error', err)
-})
-
-db.once('open', function(){
-  console.log('Connection to DB successful')
-}) */
 
 mongoose.connect('mongodb://localhost/customers', function(err, res) {
   if(err) {

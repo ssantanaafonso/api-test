@@ -1,6 +1,7 @@
 //Initialize mongoose and customer model
 var mongoose = require('mongoose');
 var Customer  = mongoose.model('Customer');
+var fs = require('fs');
 
 //GET - Return all customers in the DB
 exports.findAllCustomers = function(req, res) {
@@ -26,9 +27,9 @@ exports.addCustomer = function(req, res) {
     var customer = new Customer({
         name:    req.body.name,
         surname:     req.body.surname,
-        photo:   req.body.photo,
-        createdBy:  req.body.createdBy,
-        modifiedBy:    req.body.modifiedBy,
+        photo: 'none',
+        createdBy:  req.user.name,
+        modifiedBy:    req.user.name,
         lastModified:  req.body.lastModified
     });
     customer.save(function(err, customer) {
@@ -42,13 +43,34 @@ exports.updateCustomer = function(req, res) {
     Customer.findById(req.params.id, function(err, customer) {
         customer.name = req.body.name,
         customer.surname = req.body.surname,
-        customer.photo = req.body.photo,
-        customer.createdBy = req.body.createdBy,
-        customer.modifiedBy = req.body.modifiedBy,
+        customer.createdBy = customer.createdBy,
+        customer.modifiedBy = req.user.name,
         customer.lastModified = req.body.lastModified
         customer.save(function(err) {
             if(err) return res.status(500).send(err.message);
       res.status(200).jsonp(customer);
+        });
+    });
+};
+
+//PUT - Updates a customer profile picture
+
+exports.updateCustomerImage = function(req, res) {
+    Customer.findById(req.params.id, function(err, customer) {
+        if(customer.photo != 'none'){
+            fs.unlink(customer.photo, (err) =>{
+                if(err){
+                    console.error(err)
+                    return
+                }
+            });
+        }
+        customer.photo = req.file.path.replace("\\", "/"),
+        customer.modifiedBy = req.user.name,
+        customer.lastModified = req.body.lastModified
+        customer.save(function(err) {
+            if(err) return res.status(500).send(err.message);
+            res.status(200).jsonp(customer);
         });
     });
 };
