@@ -2,18 +2,18 @@ var mongoose = require('mongoose');
 var User = mongoose.model('User');
 
 //GET - Return all users in the DB
-exports.findAllUsers = function(req, res) {
+exports.findAllUsers = async function(req, res) {
     if(req.user.role != "admin") return res.send(401, "Not enough permissions to manage users");
-    User.find(function(err, users) {
+    await User.find(function(err, users) {
     if(err) res.send(500, err.message);
     console.log('GET /users')
         res.status(200).jsonp(users);
     });
 };
 //GET - Return a certain user in the DB by Id
-exports.findUserById = function(req, res) {
+exports.findUserById = async function(req, res) {
     if(req.user.role != "admin") return res.send(401, "Not enough permissions to manage users");
-    User.findById(req.params.id, function(err, user) {
+    await User.findById(req.params.id, function(err, user) {
     if(err) return res.status(404).send("User not found");
     console.log('GET /user/' + req.params.id);
         res.status(200).jsonp(user);
@@ -41,7 +41,7 @@ exports.addUser = async function(req, res) {
             role: req.body.role
         });
         user.password = await user.encryptPassword(req.body.password);
-        user.save(function(err, user) {
+        await user.save(function(err, user) {
             if(err) return res.status(500).send( err.message);
         res.status(200).jsonp(user);
         });
@@ -49,10 +49,10 @@ exports.addUser = async function(req, res) {
 };
 
 //PUT - Update a register already exists
-exports.updateUser = function(req, res) {
+exports.updateUser = async function(req, res) {
     if(req.user.role != "admin") return res.send(401, "Not enough permissions to manage users");
     if(req.body.role !== "admin" && req.body.role !== "user") return res.send(400, "Only 'admin' or 'user' values are allowed for field 'role'")
-    User.findById(req.params.id, async function(err, user) {
+    await User.findById(req.params.id, async function(err, user) {
         if(err) return res.status(404).send("User not found");
 
         if(user.role === 'admin'){
@@ -71,7 +71,7 @@ exports.updateUser = function(req, res) {
         user.password = req.body.password,
         user.role = req.body.role
         user.password = await user.encryptPassword(req.body.password);
-        user.save(function(err) {
+        await user.save(function(err) {
             if(err) return res.status(500).send(err.message);
         res.status(200).jsonp(user);
         });
@@ -79,11 +79,11 @@ exports.updateUser = function(req, res) {
 };
 
 //DELETE - Delete a User with specified ID
-exports.deleteUser = function(req, res) {
+exports.deleteUser = async function(req, res) {
     if(req.user.role != "admin") return res.send(401, "Not enough permissions to manage users");
     console.log(`DELETE USER ${req.params.id}`);
 
-    User.findById(req.params.id, async function(err, user) {
+    await User.findById(req.params.id, async function(err, user) {
         if(err) return res.status(404).send("User not found");
         const onlyAdmin = await User.find({role: "admin"}, function(err,obj) { 
             if(err) return res.status(500).send("Server error");
@@ -94,14 +94,14 @@ exports.deleteUser = function(req, res) {
                 console.log(onlyAdmin.length);
                 return res.status(400).send('The only admin user can not be deleted');
             }else{
-                user.remove(function(err) {
+                await user.remove(function(err) {
                     if(err) return res.status(500).send(err.message);
                     return res.status(200).send("User "+user.name+ " removed");
                 })
             }
         }
         else{
-            user.remove(function(err) {
+            await user.remove(function(err) {
                 if(err) return res.status(500).send(err.message);
             res.status(200).send("User "+user.name+ " removed");
             })
