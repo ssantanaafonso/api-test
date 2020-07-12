@@ -55,6 +55,17 @@ exports.updateUser = function(req, res) {
     if(req.body.role !== "admin" && req.body.role !== "user") return res.send(400, "Only 'admin' or 'user' values are allowed for field 'role'")
     User.findById(req.params.id, async function(err, user) {
         if(err) return res.status(404).send("User not found");
+
+        if(user.role === 'admin'){
+            const onlyAdmin = await User.find({role: "admin"}, function(err,obj) { 
+                if(err) return res.status(500).send("Server error");
+            })
+            if(onlyAdmin.length === 1 && user.role !== req.body.role){
+                console.log(onlyAdmin.length);
+                return res.status(400).send('The last admin user can not change its role');
+            }
+        }
+
         user.name = req.body.name,
         user.email = req.body.email,
         user.password = req.body.password,
