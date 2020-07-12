@@ -14,7 +14,7 @@ exports.findAllCustomers = function(req, res) {
 //GET - Return a certain customers in the DB by Id
 exports.findCustomerById = function(req, res) {
     Customer.findById(req.params.id, function(err, customer) {
-    if(err) return res.send(500, err.message);
+    if(err) return res.send(404, "User does not exist");
     console.log('GET /customer/' + req.params.id);
         res.status(200).jsonp(customer);
     });
@@ -41,6 +41,7 @@ exports.addCustomer = function(req, res) {
 //PUT - Update a register already exists
 exports.updateCustomer = function(req, res) {
     Customer.findById(req.params.id, function(err, customer) {
+        if(err) return res.status(404).send("User not found");
         customer.name = req.body.name,
         customer.surname = req.body.surname,
         customer.createdBy = customer.createdBy,
@@ -56,7 +57,12 @@ exports.updateCustomer = function(req, res) {
 //PUT - Updates a customer profile picture
 
 exports.updateCustomerImage = function(req, res) {
+    if (req.fileValidationError) return res.status(422).send(req.fileValidationError);
+    if (typeof req.file === 'undefined') {
+        return res.status(422).send("An image should be attached");
+    }
     Customer.findById(req.params.id, function(err, customer) {
+        if(err) return res.status(404).send("User not found");
         if(customer.photo != 'none'){
             fs.unlink(customer.photo, (err) =>{
                 if(err){
@@ -78,9 +84,10 @@ exports.updateCustomerImage = function(req, res) {
 //DELETE - Delete a Customer with specified ID
 exports.deleteCustomer = function(req, res) {
     Customer.findById(req.params.id, function(err, customer) {
+        if(err) return res.status(404).send("Customer not found");
         customer.remove(function(err) {
             if(err) return res.status(500).send(err.message);
-      res.status(200).send();
+            res.status(200).send("Customer "+customer.name+ " removed");
         })
     });
 };

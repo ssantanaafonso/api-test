@@ -14,7 +14,7 @@ exports.findAllUsers = function(req, res) {
 exports.findUserById = function(req, res) {
     if(req.user.role != "admin") return res.send(401, "Not enough permissions to manage users");
     User.findById(req.params.id, function(err, user) {
-    if(err) return res.send(500, err.message);
+    if(err) return res.status(404).send("User not found");
     console.log('GET /user/' + req.params.id);
         res.status(200).jsonp(user);
     });
@@ -23,8 +23,8 @@ exports.findUserById = function(req, res) {
 //POST - Insert a new user in the DB
 exports.addUser = async function(req, res) {
     //const emailExists = User.findOne({email: req.body.email});
-    if(req.user.role != "admin") return res.send(401, "Not enough permissions to manage users");
-    const emailExists = await User.findOne({email: req.body.email}, function(err,obj) { 
+    if(req.user.role !== "admin") return res.send(401, "Not enough permissions to manage users");
+    const emailExists = await User.findOne({email: req.body.email}, function(err,obj) {
         if(obj !== null){
             console.log(obj.email);
         }
@@ -33,7 +33,7 @@ exports.addUser = async function(req, res) {
     console.log('POST');
     console.log(req.body);
     if(emailExists !== null){
-        return res.status(500).send('Email already exists');
+        return res.status(400).send('Email already exists');
     }else{
         var user = new User({
             name: req.body.name,
@@ -52,7 +52,9 @@ exports.addUser = async function(req, res) {
 //PUT - Update a register already exists
 exports.updateUser = function(req, res) {
     if(req.user.role != "admin") return res.send(401, "Not enough permissions to manage users");
+    if(req.body.role !== "admin" && req.body.role !== "user") return res.send(400, "Only 'admin' or 'user' values are allowed for field 'role'")
     User.findById(req.params.id, async function(err, user) {
+        if(err) return res.status(404).send("User not found");
         user.name = req.body.name,
         user.email = req.body.email,
         user.password = req.body.password,
@@ -69,10 +71,28 @@ exports.updateUser = function(req, res) {
 exports.deleteUser = function(req, res) {
     if(req.user.role != "admin") return res.send(401, "Not enough permissions to manage users");
     console.log(`DELETE USER ${req.params.id}`);
-    User.findById(req.params.id, function(err, user) {
-        user.remove(function(err) {
-            if(err) return res.status(500).send(err.message);
-        res.status(200).send();
+
+    User.findById(req.params.id, async function(err, user) {
+        if(err) return res.status(404).send("User not found");
+        const onlyAdmin = await User.find({role: "admin"}, function(err,obj) { 
+            if(err) return res.status(500).send("Server error");
         })
+        if(user.role === 'admin'){
+            if(onlyAdmin.length === 1){
+                console.log(onlyAdmin.length);
+                return res.status(400).send('The only admin user can not be deleted');
+            }else{
+                user.remove(function(err) {
+                    if(err) return res.status(500).send(err.message);
+                    return res.status(200).send("User "+user.name+ " removed");
+                })
+            }
+        }
+        else{
+            user.remove(function(err) {
+                if(err) return res.status(500).send(err.message);
+            res.status(200).send("User "+user.name+ " removed");
+            })
+        }
     });
 };

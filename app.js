@@ -29,7 +29,8 @@ var express = require("express"),
       if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'){
         cb(null, true);
       }else{
-        cb('Wrong mimetype, only jpeg or png files accepted', false);
+        req.fileValidationError = 'Wrong mimetype, only jpeg or png files accepted';
+        cb(null, false, new Error('Wrong mimetype, only jpeg or png files accepted'));
       }
     }
 
@@ -55,19 +56,19 @@ var router = express.Router();
     .get(passport.authenticate('basic', { session: false }), CustomerCtrl.findAllCustomers)
     .post(passport.authenticate('basic', { session: false }), CustomerCtrl.addCustomer);
 
-  router.route('/customer/:id')
+  router.route('/customers/:id')
     .get(passport.authenticate('basic', { session: false }), CustomerCtrl.findCustomerById)
     .put(passport.authenticate('basic', { session: false }), CustomerCtrl.updateCustomer)
     .delete(passport.authenticate('basic', { session: false }), CustomerCtrl.deleteCustomer);
 
-  router.route('/customer/:id/profilePic')
+  router.route('/customers/:id/profilePic')
     .put(passport.authenticate('basic', { session: false }), upload.single('customerImage'), CustomerCtrl.updateCustomerImage);
 
   //users
   router.route('/users')
     .get(passport.authenticate('basic', { session: false }), UserCtrl.findAllUsers)
     .post(passport.authenticate('basic', { session: false }), UserCtrl.addUser);
-  router.route('/user/:id')
+  router.route('/users/:id')
     .get(passport.authenticate('basic', { session: false }), UserCtrl.findUserById)
     .put(passport.authenticate('basic', { session: false }), UserCtrl.updateUser)
     .delete(passport.authenticate('basic', { session: false }), UserCtrl.deleteUser);
