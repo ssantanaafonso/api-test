@@ -22,7 +22,6 @@ exports.findUserById = function(req, res) {
 
 //POST - Insert a new user in the DB
 exports.addUser = async function(req, res) {
-    //const emailExists = User.findOne({email: req.body.email});
     if(req.user.role !== "admin") return res.send(401, "Not enough permissions to manage users");
     const emailExists = await User.findOne({email: req.body.email}, function(err,obj) {
         if(obj !== null){
@@ -57,6 +56,7 @@ exports.updateUser = function(req, res) {
         if(err) return res.status(404).send("User not found");
 
         if(user.role === 'admin'){
+            //If only exists one admin user at db it wont be role updated
             const onlyAdmin = await User.find({role: "admin"}, function(err,obj) { 
                 if(err) return res.status(500).send("Server error");
             })
@@ -88,7 +88,8 @@ exports.deleteUser = function(req, res) {
         const onlyAdmin = await User.find({role: "admin"}, function(err,obj) { 
             if(err) return res.status(500).send("Server error");
         })
-        if(user.role === 'admin'){
+        //If only exists one admin user at db it wont be removed
+        if(user.role === 'admin'){ 
             if(onlyAdmin.length === 1){
                 console.log(onlyAdmin.length);
                 return res.status(400).send('The only admin user can not be deleted');

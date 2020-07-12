@@ -13,6 +13,7 @@ var express = require("express"),
     passport = require('passport');
     require('./config/passport');
     multer = require('multer');
+    helmet = require('helmet')
     
 
     storage = multer.diskStorage({
@@ -42,6 +43,7 @@ var express = require("express"),
     });
 
 //MIDLEWARE
+  app.use(helmet());
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(bodyParser.json());
   app.use(methodOverride());
@@ -75,7 +77,7 @@ var router = express.Router();
   
 app.use(router);
 
-mongoose.connect('mongodb://localhost/customers', function(err, res) {
+mongoose.connect('mongodb://localhost/customers', { useNewUrlParser: true, useUnifiedTopology: true }, function(err, res) {
   if(err) {
     console.log('ERROR: connecting to Database. ' + err);
   }
