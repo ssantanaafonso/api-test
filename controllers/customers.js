@@ -85,6 +85,15 @@ exports.updateCustomerImage = function(req, res) {
 exports.deleteCustomer = function(req, res) {
     Customer.findById(req.params.id, function(err, customer) {
         if(err) return res.status(404).send("Customer not found");
+        //remove customer's profile image on delete
+        if(customer.photo != 'none'){
+            fs.unlink(customer.photo, (err) =>{
+                if(err){
+                    console.error(err)
+                    return
+                }
+            });
+        }
         customer.remove(function(err) {
             if(err) return res.status(500).send(err.message);
             res.status(200).send("Customer "+customer.name+ " removed");
