@@ -4,7 +4,7 @@
    "dependencies": {
       "bcrypt": "^5.0.0",
       "body-parser": "^1.5.1",
-      "express": "^4.7.1",
+      "express": "^4.17.3",
       "helmet": "^3.23.3",
       "method-override": "^2.1.2",
       "mongoose": "~5.9.18",
